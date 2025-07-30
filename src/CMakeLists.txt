@@ -1,7 +1,7 @@
 # Source files for each module
 add_library(core core/dispatcher.cpp core/parser.cpp)
 add_library(functional functional/eval.cpp functional/numbers.cpp functional/stats.cpp)
-add_library(utils utils/symbol_table.cpp)
+add_library(utils utils/symbol_table.cpp utils/expr_node.cpp)
 add_library(data data/big_decimal.cpp)
 
 # The main CLI executable
