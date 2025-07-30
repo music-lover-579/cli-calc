@@ -1,24 +1,26 @@
 #include "utils/symbol_table.h"
 
-template<typename T>
-SymbolTable<T>& SymbolTable<T>::insert_or_assign(const std::string& symbol_name, const T& value) {
+SymbolTable::SymbolTable() : symbols_() {}
+
+SymbolTable::SymbolTable(const std::unordered_map<types::Symbol, types::Numeral>& symbols) : symbols_(symbols) {}
+
+SymbolTable::SymbolTable(std::initializer_list<std::pair<const types::Symbol, types::Numeral>> items) : symbols_(items) {}
+
+SymbolTable& SymbolTable::insert_or_assign(const types::Symbol& symbol_name, const types::Numeral& value) {
     symbols_.insert_or_assign(symbol_name, value);
     return *this;
 }
 
-template<typename T>
-bool SymbolTable<T>::contains(const std::string& symbol_name) const noexcept {
+bool SymbolTable::contains(const types::Symbol& symbol_name) const noexcept {
     return (symbols_.find(symbol_name) != symbols_.end());
 }
 
-template<typename T>
-const T& SymbolTable<T>::at(const std::string& symbol_name) const {
+const types::Numeral& SymbolTable::at(const types::Symbol& symbol_name) const {
     auto it = symbols_.find(symbol_name);
-    if (it == symbols_.end()) throw std::runtime_error("Symbol '" + symbol_name + "' undefined");
+    if (it == symbols_.end()) throw std::runtime_error("Syntax error: Symbol '" + symbol_name + "' undefined");
     return it->second;
 }
 
-template<typename T>
-T& SymbolTable<T>::operator[](const std::string& symbol_name) {
+types::Numeral& SymbolTable::operator[](const types::Symbol& symbol_name) {
     return symbols_[symbol_name];
 }
