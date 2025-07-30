@@ -1,0 +1,11 @@
+# Source files for each module
+add_library(core core/dispatcher.cpp core/parser.cpp)
+add_library(functional functional/eval.cpp functional/numbers.cpp functional/stats.cpp)
+add_library(utils utils/symbol_table.cpp)
+add_library(data data/big_decimal.cpp)
+
+# The main CLI executable
+add_executable(cli-calc main.cpp)
+
+# Link libraries to main program
+target_link_libraries(cli-calc core functional utils data)
