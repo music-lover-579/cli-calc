@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include "globals.h"
 #include "data/datatype_decl.h"
+#include "utils/expr_node.h"
+#include "utils/operator_table.h"
 
 namespace parser {
 
@@ -15,10 +17,11 @@ namespace parser {
 enum class TokenType {
     Numeral,
     Symbol,
-    Operator
+    Operator,
+    Bracket
 };
 // Content of token
-typedef std::variant<types::Numeral, types::Symbol> TokenContent;
+typedef std::variant<types::Numeral, std::string> TokenContent;
 
 // Token
 typedef std::pair<TokenType, TokenContent> Token;
@@ -59,12 +62,20 @@ std::pair<std::string::iterator, TokenType> find_token_end(std::string::iterator
 Token string_to_token(std::string::iterator token_begin, std::string::iterator token_end, TokenType token_type);
 
 /**
- * @brief Checks whether a character is valid in a numeral.
+ * @brief Checks whether a character is valid to be the start of a numeral.
  * 
  * @param ch the character to check
  * @note Including digits and the decimal point.
  */
-inline bool is_numeral(char ch) { return std::isdigit(ch) || ch == '.'; }
+inline bool is_numeral_start(char ch) { return std::isdigit(ch) || ch == '.'; }
+
+/**
+ * @brief Checks whether a character is valid to be the middle of a numeral.
+ * 
+ * @param ch the character to check
+ * @note Including digits, decimal point, and capitalized E.
+ */
+inline bool is_numeral_middle(char ch) { return is_numeral_start(ch) || ch == 'E'; }
 
 /**
  * @brief Checks whether a character is valid to be the start of a symbol.
@@ -81,5 +92,12 @@ inline bool is_symbol_start(char ch) { return std::isupper(ch) || std::islower(c
  * @note Including all characters, numbers, and the underline _.
  */
 inline bool is_symbol_middle(char ch) { return is_symbol_start(ch) || std::isdigit(ch); }
+
+/**
+ * @brief Checks whether a string is a bracket.
+ * 
+ * @param str the string to check
+ */
+inline bool is_bracket(const std::string& str) { return str == "(" || str == ")" || str == "[" || str == "]" || str == "{" || str == "}"; }
 
 }; // namespace parser
