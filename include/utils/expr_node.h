@@ -212,6 +212,13 @@ public:
         if (it != variables.end()) return it->second; // Prioritizes variables
         return symbols.at(symbol_);
     }
+
+    /**
+     * @brief Acquire the name of the symbol.
+     * 
+     * @returns a types::Symbol with the name of the symbol.
+     */
+    types::Symbol getSymbolName() const { return symbol_; }
 };
 
 /**
