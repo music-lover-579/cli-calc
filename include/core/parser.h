@@ -5,6 +5,7 @@
 #include <string>
 #include <variant>
 #include <utility>
+#include <stdexcept>
 #include "globals.h"
 #include "data/datatype_decl.h"
 
@@ -17,7 +18,7 @@ enum class TokenType {
     Operator
 };
 // Content of token
-typedef std::variant<types::Numeral, types::Symbol, std::string> TokenContent;
+typedef std::variant<types::Numeral, types::Symbol> TokenContent;
 
 // Token
 typedef std::pair<TokenType, TokenContent> Token;
@@ -42,18 +43,43 @@ void remove_spaces(std::string& expression);
  * 
  * @param token_begin the iterator pointing to the begin of the token
  * @param expr_end the iterator pointing to the end of the expression
- * @returns a std::string::iterator pointing to the end of the token (next place, by STL convention)
+ * @returns a std::pair, first item std::string::iterator pointing to the end of the token (next place, by STL convention), second item token type
  */
-std::string::iterator find_token_end(std::string::const_iterator token_begin, std::string::const_iterator expr_end);
+std::pair<std::string::iterator, TokenType> find_token_end(std::string::iterator token_begin, std::string::iterator expr_end);
 
 /**
  * @brief Converts a string of a token to a Token.
  * 
  * @param token_begin iterator pointing to the begin of the token
  * @param token_end iterator pointing to the end of the token
+ * @param token_type type of the token
  * @returns the Token converted from the std::string
  * @throw std::runtime_error if encounters an invalid number
  */
-Token string_to_token(std::string::const_iterator token_begin, std::string::const_iterator token_end);
+Token string_to_token(std::string::iterator token_begin, std::string::iterator token_end, TokenType token_type);
+
+/**
+ * @brief Checks whether a character is valid in a numeral.
+ * 
+ * @param ch the character to check
+ * @note Including digits and the decimal point.
+ */
+inline bool is_numeral(char ch) { return std::isdigit(ch) || ch == '.'; }
+
+/**
+ * @brief Checks whether a character is valid to be the start of a symbol.
+ * 
+ * @param ch the character to check
+ * @note Including all characters and the underline _.
+ */
+inline bool is_symbol_start(char ch) { return std::isupper(ch) || std::islower(ch) || ch == '_'; }
+
+/**
+ * @brief Checks whether a character is valid to be in the middle of a symbol.
+ * 
+ * @param ch the character to check
+ * @note Including all characters, numbers, and the underline _.
+ */
+inline bool is_symbol_middle(char ch) { return is_symbol_start(ch) || std::isdigit(ch); }
 
 }; // namespace parser
