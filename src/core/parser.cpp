@@ -14,14 +14,8 @@ std::vector<parser::Token> parser::tokenize(std::string expression) {
         token_begin = token_end; // Move to the next token
     } while (token_begin != expression.end()); // Until reaches the end of the expressions
 
-    // Recognize parenthesis and operators
-    for (auto& [token_type, token_content] : tokens) {
-        if (token_type == TokenType::Numeral) continue; // Is number, continue
-
-        std::string token_string = std::get<std::string>(token_content);
-        if (is_bracket(token_string)) token_type = TokenType::Bracket; // Is a bracket
-        if (expr::contains(token_string)) token_type = TokenType::Operator; // Is an operator
-    }
+    // Recognize brackets and operators
+    recognize(tokens);
     
     return tokens;
 }
@@ -37,9 +31,9 @@ std::pair<std::string::iterator, parser::TokenType> parser::find_token_end(std::
     // Check if the range is valid
     if (token_begin == expr_end) throw std::out_of_range("Internal error: Attempt to parse after end of expression");
     
-    if (is_numeral_start(*token_begin)) { // Is a numeral
+    if (is_numeral(*token_begin)) { // Is a numeral
         auto end_it = token_begin + 1;
-        while (is_numeral_middle(*end_it) && end_it != expr_end) ++end_it; // Go on until the position is no longer a numeral
+        while (is_numeral(*end_it) && end_it != expr_end) ++end_it; // Go on until the position is no longer a numeral
         return std::pair<std::string::iterator, TokenType>(end_it, TokenType::Numeral);
     }
     else if (is_symbol_start(*token_begin)) { // Is a symbol
@@ -47,7 +41,7 @@ std::pair<std::string::iterator, parser::TokenType> parser::find_token_end(std::
         while (is_symbol_middle(*end_it) && end_it != expr_end) ++end_it; // Go on until the position is no longer a symbol
         return std::pair<std::string::iterator, TokenType>(end_it, TokenType::Symbol);
     }
-    else { // Is an operator (Operators only have 1 character)
+    else { // Other tokens will have only 1 character
         return std::pair<std::string::iterator, TokenType>(token_begin + 1, TokenType::Symbol);
     }
 }
@@ -68,3 +62,12 @@ parser::Token parser::string_to_token(std::string::iterator token_begin, std::st
     return Token(token_type, token_content);
 }
 
+void parser::recognize(std::vector<parser::Token>& tokens) {
+    for (auto& [token_type, token_content] : tokens) {
+        if (token_type == TokenType::Numeral) continue; // Is number, continue
+
+        std::string token_string = std::get<std::string>(token_content);
+        if (is_bracket(token_string)) token_type = TokenType::Bracket; // Is a bracket
+        if (expr::contains(token_string)) token_type = TokenType::Operator; // Is an operator
+    }
+}

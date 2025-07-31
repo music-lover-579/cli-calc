@@ -62,20 +62,19 @@ std::pair<std::string::iterator, TokenType> find_token_end(std::string::iterator
 Token string_to_token(std::string::iterator token_begin, std::string::iterator token_end, TokenType token_type);
 
 /**
+ * @brief Recognizes the brackets and operators in the token array.
+ * 
+ * @param tokens the tokens of the expression
+ */
+void recognize(std::vector<Token>& tokens);
+
+/**
  * @brief Checks whether a character is valid to be the start of a numeral.
  * 
  * @param ch the character to check
  * @note Including digits and the decimal point.
  */
-inline bool is_numeral_start(char ch) { return std::isdigit(ch) || ch == '.'; }
-
-/**
- * @brief Checks whether a character is valid to be the middle of a numeral.
- * 
- * @param ch the character to check
- * @note Including digits, decimal point, and capitalized E.
- */
-inline bool is_numeral_middle(char ch) { return is_numeral_start(ch) || ch == 'E'; }
+inline bool is_numeral(char ch) { return std::isdigit(ch) || ch == '.'; }
 
 /**
  * @brief Checks whether a character is valid to be the start of a symbol.
