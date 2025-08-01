@@ -18,7 +18,8 @@ enum class TokenType {
     Numeral,
     Symbol,
     Operator,
-    Bracket
+    Bracket,
+    Separator
 };
 // Content of token
 typedef std::variant<types::Numeral, std::string> TokenContent;

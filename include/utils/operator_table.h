@@ -1,5 +1,6 @@
 #pragma once
 
+#include <climits>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -14,12 +15,20 @@ namespace expr {
 
 using NodeFactory = std::function<std::unique_ptr<expr::ExprNode>(std::vector<std::unique_ptr<expr::ExprNode>>&&)>;
 
+struct OperatorInfo {
+    int arity_;              // Arity of operator
+    bool postfix_;           // Whether it is a postfix operator (such as !)
+    int precedence_;         // Precedence of operator (higher means greater precedence)
+    bool right_assoc_;       // Whether the operator is right-associative
+    NodeFactory node_func_;  // The factory function for generating the node of the function
+};
+
 /**
  * @brief Acquires the node factory map.
  * 
  * @return a const reference to the static node factory map.
  */
-const std::unordered_map<std::string, NodeFactory>& get_node_factory_map();
+const std::unordered_map<std::string, OperatorInfo>& get_node_factory_map();
 
 /**
  * @brief Creates a node from the node factory map.
@@ -39,5 +48,14 @@ std::unique_ptr<expr::ExprNode> create_node(const std::string& op, std::vector<s
  * @returns `true` if the operator name does exist, `false` otherwise.
  */
 bool contains(const std::string& op);
+
+/**
+ * @brief Acquires the operator info
+ * 
+ * @param op a std::string of the operator
+ * @returns an expr::OperatorInfo struct containing the information
+ * @throws std::runtime_error if the operator does not exist.
+ */
+OperatorInfo get_operator_info(const std::string& op);
 
 } // namespace expr

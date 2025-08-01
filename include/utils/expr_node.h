@@ -268,6 +268,64 @@ public:
 };
 
 /**
+ * @class PositiveNode
+ * 
+ * @brief Unary node of the +x operation.
+ */
+class PositiveNode : public UnaryNode {
+public:
+    /**
+     * @brief Default constructor.
+     */
+    PositiveNode() : UnaryNode() {}
+
+    /**
+     * @brief Constructor of the PositiveNode.
+     * 
+     * @param child rvalue reference to a std::unique_ptr to the child
+     */
+    PositiveNode(std::unique_ptr<ExprNode>&& child) : UnaryNode(std::move(child)) {}
+
+    virtual types::Numeral evaluate(const SymbolTable& symbols) const override final { 
+        return child_->evaluate(symbols);
+    }
+
+    virtual types::Numeral evaluateAt(const SymbolTable& symbols, 
+        const std::unordered_map<types::Symbol, types::Numeral>& variables) const override final {
+        return child_->evaluateAt(symbols, variables);
+    }
+};
+
+/**
+ * @class NegativeNode
+ * 
+ * @brief Unary node of the -x operation.
+ */
+class NegativeNode : public UnaryNode {
+public:
+    /**
+     * @brief Default constructor.
+     */
+    NegativeNode() : UnaryNode() {}
+
+    /**
+     * @brief Constructor of the PositiveNode.
+     * 
+     * @param child rvalue reference to a std::unique_ptr to the child
+     */
+    NegativeNode(std::unique_ptr<ExprNode>&& child) : UnaryNode(std::move(child)) {}
+
+    virtual types::Numeral evaluate(const SymbolTable& symbols) const override final { 
+        return -child_->evaluate(symbols);
+    }
+
+    virtual types::Numeral evaluateAt(const SymbolTable& symbols, 
+        const std::unordered_map<types::Symbol, types::Numeral>& variables) const override final {
+        return -child_->evaluateAt(symbols, variables);
+    }
+};
+
+/**
  * @class AdditionNode
  * 
  * @brief Binary node of the addition operation.

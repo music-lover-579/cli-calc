@@ -69,5 +69,6 @@ void parser::recognize(std::vector<parser::Token>& tokens) {
         std::string token_string = std::get<std::string>(token_content);
         if (is_bracket(token_string)) token_type = TokenType::Bracket; // Is a bracket
         if (expr::contains(token_string)) token_type = TokenType::Operator; // Is an operator
+        if (token_string == ",") token_type = TokenType::Separator;
     }
 }
