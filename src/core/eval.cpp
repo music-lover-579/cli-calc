@@ -113,14 +113,14 @@ std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
     std::stack<std::unique_ptr<expr::ExprNode>> node_stack; // Stack for the node
     std::vector<std::unique_ptr<expr::ExprNode>> children_nodes; // Temporary vector for storing children nodes
 
-    for (int i = 0; i < reverse_polish.size(); ++i) {
-        auto element = reverse_polish.front();
-        reverse_polish.pop();
-        if (element.first == parser::TokenType::Numeral) std::cout << std::get<types::Numeral>(element.second) << " ";
-        else std::cout << std::get<std::string>(element.second) << " ";
-        reverse_polish.push(element);
-    }
-    std::cout << std::endl;
+    // for (int i = 0; i < reverse_polish.size(); ++i) {
+    //     auto element = reverse_polish.front();
+    //     reverse_polish.pop();
+    //     if (element.first == parser::TokenType::Numeral) std::cout << std::get<types::Numeral>(element.second) << " ";
+    //     else std::cout << std::get<std::string>(element.second) << " ";
+    //     reverse_polish.push(element);
+    // }
+    // std::cout << std::endl;
 
     while (!reverse_polish.empty()) {
         auto token = reverse_polish.front(); // Take out the frontmost token
