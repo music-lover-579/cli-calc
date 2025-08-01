@@ -1,4 +1,5 @@
 #include "core/eval.h"
+#include <iostream>
 
 std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
     std::vector<parser::Token>::const_iterator tokens_begin, std::vector<parser::Token>::const_iterator tokens_end) {
@@ -20,7 +21,11 @@ std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
             
             // Disambiguitate between infix +- and prefix +-
             if (operator_name == "+" || operator_name == "-") {
-                if ((it == tokens_begin) || ((it - 1)->first != parser::TokenType::Numeral && (it - 1)->first != parser::TokenType::Symbol)) {
+                if ((it == tokens_begin)                                    // Beginning of expression
+                    || ((it - 1)->first == parser::TokenType::Bracket)      // Any kind of bracket
+                    || ((it - 1)->first == parser::TokenType::Separator)    // A comma separator
+                    || ((it - 1)->first == parser::TokenType::Operator      // An operator ...
+                        && expr::get_operator_info(std::get<std::string>((it - 1)->second)).arity_ != 0)) { // but not nullary (treated as const)
                     operator_name += operator_name; // Change + to ++, - to -- to avoid ambiguity
                 }
             }
@@ -28,26 +33,30 @@ std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
             // Normal logic
             auto info = expr::get_operator_info(operator_name);
             if (info.arity_ == 0) reverse_polish.push(*it); // Treat it as a number or a symbol
-            else if ((info.arity_ == 1 && !info.postfix_) || info.arity_ >= 3) 
-                operators.push(parser::Token(parser::TokenType::Operator, operator_name)); // Prefix operator
-            else if (info.arity_ == 1 && info.postfix_) { // Postfix Unary operator
-                while (true) {
-                    if (operators.empty()) break; // Operator queue empty, break directly
-                     
-                    auto top_info = expr::get_operator_info(std::get<std::string>(operators.top().second)); // Operator info at operator stack top
-                    if (top_info.precedence_ > info.precedence_) {
-                        reverse_polish.push(std::move(operators.top())); // Push the top of the operators stack into RPN queue
-                        operators.pop(); // Pop the operator stack
-                    }
-                    else break; // Exit the loop
-                }
-                reverse_polish.push(*it); // Push this operator into the RPN queue
-            }
-            else { // Binary operator
-                while (true) {
-                    if (operators.empty()) break; // Empty, directly break
+            else if (info.arity_ == 1) {// Unary operator 
+                if (!info.postfix_) operators.push(parser::Token(parser::TokenType::Operator, operator_name)); // Prefix operator
+                else { // Postfix operator
+                    while (true) {
+                        // Empty or bracket top, break directly
+                        if (operators.empty() || operators.top().first == parser::TokenType::Bracket) break; 
 
-                    auto top_info = expr::get_operator_info(std::get<std::string>(operators.top().second));
+                        std::string op_str = std::get<std::string>(operators.top().second);                     
+                        auto top_info = expr::get_operator_info(op_str); // Operator info at operator stack top
+                        if (top_info.precedence_ > info.precedence_) {
+                            reverse_polish.push(std::move(operators.top())); // Push the top of the operators stack into RPN queue
+                            operators.pop(); // Pop the operator stack
+                        }
+                        else break; // Exit the loop
+                    }
+                    reverse_polish.push(*it); // Push this operator into the RPN queue
+                }
+            }
+            else if (info.arity_ == 2) { // Binary operator
+                while (true) {
+                    if (operators.empty() || operators.top().first == parser::TokenType::Bracket) break; // Empty or bracket top, directly break
+
+                    std::string op_str = std::get<std::string>(operators.top().second);                     
+                    auto top_info = expr::get_operator_info(op_str); // Operator info at operator stack top
                     if (((top_info.precedence_ > info.precedence_)                                      // Higher precedence
                         || (top_info.precedence_ == info.precedence_ && !top_info.right_assoc_))        // Equal precedence and left assoc
                         && operators.top().first != parser::TokenType::Bracket) {                       // Not a parenthesis, not empty
@@ -58,6 +67,9 @@ std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
                     else break; // Exit the loop
                 }
                 operators.push(*it); // Push this operator into the operators stack
+            }
+            else { // Multinary operator
+                // TODO
             }
             break;
         }
@@ -101,6 +113,15 @@ std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
     std::stack<std::unique_ptr<expr::ExprNode>> node_stack; // Stack for the node
     std::vector<std::unique_ptr<expr::ExprNode>> children_nodes; // Temporary vector for storing children nodes
 
+    for (int i = 0; i < reverse_polish.size(); ++i) {
+        auto element = reverse_polish.front();
+        reverse_polish.pop();
+        if (element.first == parser::TokenType::Numeral) std::cout << std::get<types::Numeral>(element.second) << " ";
+        else std::cout << std::get<std::string>(element.second) << " ";
+        reverse_polish.push(element);
+    }
+    std::cout << std::endl;
+
     while (!reverse_polish.empty()) {
         auto token = reverse_polish.front(); // Take out the frontmost token
         reverse_polish.pop();
@@ -143,10 +164,9 @@ bool eval::check_bracket_matching(std::vector<parser::Token>::const_iterator tok
         std::string bracket = std::get<std::string>(it->second);
         if (bracket == "(" || bracket == "[" || bracket == "{") brackets.push(bracket); // An opening bracket
         else { // A closing bracket
-            if (!is_bracket_match(bracket, brackets.top())) return false; // Not paired
+            if (brackets.empty() || !is_bracket_match(brackets.top(), bracket)) return false; // Not paired
             brackets.pop();
         }
-
-        return brackets.empty(); // Empty means all correctly paired, not empty means not correctly paired
     }
+    return brackets.empty(); // Empty means all correctly paired, not empty means not correctly paired
 }

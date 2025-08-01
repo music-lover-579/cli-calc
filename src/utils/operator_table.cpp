@@ -35,6 +35,14 @@ const std::unordered_map<std::string, expr::OperatorInfo>& expr::get_node_factor
             if (children.size() != 2) throw std::runtime_error("Syntax error: / expects 2 arguments");
             return std::make_unique<expr::DivisionNode>(std::move(children[0]), std::move(children[1]));
         }}},
+        {"sqrt", {1, false, 4, false, [](std::vector<std::unique_ptr<expr::ExprNode>>&& children) {
+            if (children.size() != 1) throw std::runtime_error("Syntax error: sqrt expects 1 argument");
+            return std::make_unique<expr::PositiveNode>(std::move(children[0]));
+        }}},
+        {"!", {1, true, 3, false, [](std::vector<std::unique_ptr<expr::ExprNode>>&& children) {
+            if (children.size() != 1) throw std::runtime_error("Syntax error: ! expects 1 argument");
+            return std::make_unique<expr::PositiveNode>(std::move(children[0]));
+        }}},
     };
 
     return node_factory_map;

@@ -346,12 +346,12 @@ public:
     AdditionNode(std::unique_ptr<ExprNode>&& left, std::unique_ptr<ExprNode>&& right) : BinaryNode(std::move(left), std::move(right)) {}
     
     virtual types::Numeral evaluate(const SymbolTable& symbols) const override final { 
-        return left_->evaluate(symbols) + right_->evaluate(symbols);
+        return right_->evaluate(symbols) + left_->evaluate(symbols);
     }
 
     virtual types::Numeral evaluateAt(const SymbolTable& symbols, 
         const std::unordered_map<types::Symbol, types::Numeral>& variables) const override final {
-        return left_->evaluateAt(symbols, variables) + right_->evaluateAt(symbols, variables);   
+        return right_->evaluateAt(symbols, variables) + left_->evaluateAt(symbols, variables);   
     }
 };
 
@@ -376,12 +376,12 @@ public:
     SubtractionNode(std::unique_ptr<ExprNode>&& left, std::unique_ptr<ExprNode>&& right) : BinaryNode(std::move(left), std::move(right)) {}
     
     virtual types::Numeral evaluate(const SymbolTable& symbols) const override final { 
-        return left_->evaluate(symbols) - right_->evaluate(symbols);
+        return right_->evaluate(symbols) - left_->evaluate(symbols);
     }
 
     virtual types::Numeral evaluateAt(const SymbolTable& symbols, 
         const std::unordered_map<types::Symbol, types::Numeral>& variables) const override final {
-        return left_->evaluateAt(symbols, variables) - right_->evaluateAt(symbols, variables);   
+        return right_->evaluateAt(symbols, variables) - left_->evaluateAt(symbols, variables);   
     }
 };
 
@@ -406,12 +406,12 @@ public:
     MultiplicationNode(std::unique_ptr<ExprNode>&& left, std::unique_ptr<ExprNode>&& right) : BinaryNode(std::move(left), std::move(right)) {}
     
     virtual types::Numeral evaluate(const SymbolTable& symbols) const override final { 
-        return left_->evaluate(symbols) * right_->evaluate(symbols);
+        return right_->evaluate(symbols) * left_->evaluate(symbols);
     }
 
     virtual types::Numeral evaluateAt(const SymbolTable& symbols, 
         const std::unordered_map<types::Symbol, types::Numeral>& variables) const override final {
-        return left_->evaluateAt(symbols, variables) * right_->evaluateAt(symbols, variables);   
+        return right_->evaluateAt(symbols, variables) * left_->evaluateAt(symbols, variables);   
     }
 };
 
@@ -439,9 +439,9 @@ public:
      * @throws std::runtime_error if attempts to divide by 0
      */
     virtual types::Numeral evaluate(const SymbolTable& symbols) const override final { 
-        auto right_result = right_->evaluate(symbols);
-        if (right_result == 0) throw std::runtime_error("Numerical error: Cannot divide by 0"); // Cannot divide by zero
-        return left_->evaluate(symbols) / right_result;
+        auto divisor = left_->evaluate(symbols);
+        if (divisor == 0) throw std::runtime_error("Numerical error: Cannot divide by 0"); // Cannot divide by zero
+        return right_->evaluate(symbols) / divisor;
     }
 
     /**
@@ -449,9 +449,9 @@ public:
      */
     virtual types::Numeral evaluateAt(const SymbolTable& symbols, 
         const std::unordered_map<types::Symbol, types::Numeral>& variables) const override final {
-        auto right_result = right_->evaluateAt(symbols, variables);
-        if (right_result == 0) throw std::runtime_error("Numerical error: Cannot divide by 0"); // Cannot divide by zero
-        return left_->evaluateAt(symbols, variables) / right_result;
+        auto divisor = left_->evaluateAt(symbols, variables);
+        if (divisor == 0) throw std::runtime_error("Numerical error: Cannot divide by 0"); // Cannot divide by zero
+        return right_->evaluateAt(symbols, variables) / divisor;
     }
 };
 
