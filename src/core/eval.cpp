@@ -92,8 +92,46 @@ std::unique_ptr<expr::ExprNode> eval::build_expr_tree(
         }
         } // switch (it->first)
     }
+    while (!operators.empty()) { // Push the remaining operators into the expression
+        reverse_polish.push(std::move(operators.top())); // Push the top of the operators stack into RPN queue
+        operators.pop(); // Pop the operator stack
+    }
 
     // Build expression tree from Reverse Polish Notation
+    std::stack<std::unique_ptr<expr::ExprNode>> node_stack; // Stack for the node
+    std::vector<std::unique_ptr<expr::ExprNode>> children_nodes; // Temporary vector for storing children nodes
+
+    while (!reverse_polish.empty()) {
+        auto token = reverse_polish.front(); // Take out the frontmost token
+        reverse_polish.pop();
+
+        switch (token.first) { // Should be either numeral, symbol, or operator
+        case parser::TokenType::Numeral:
+            node_stack.push(std::make_unique<expr::NumeralNode>(std::get<types::Numeral>(token.second)));
+            break;
+        case parser::TokenType::Symbol:
+            node_stack.push(std::make_unique<expr::SymbolNode>(std::get<types::Symbol>(token.second)));
+            break;
+        case parser::TokenType::Operator: {
+            std::string op_name = std::get<std::string>(token.second);
+            auto op_info = expr::get_operator_info(op_name);
+            for (int i = 0; i < op_info.arity_; ++i) {
+                if (node_stack.empty()) { // If node stack is empty, then there are some errors
+                    throw std::runtime_error("Syntax error: Operator '" + op_name + "' expects " + std::to_string(op_info.arity_)
+                    + " arguments, received " + std::to_string(i));
+                }
+
+                children_nodes.push_back(std::move(node_stack.top()));
+                node_stack.pop();
+            }
+            node_stack.push(expr::create_node(op_name, std::move(children_nodes)));
+            children_nodes.clear(); // Reset
+        }
+        } // switch (token.first)
+    }
+
+    if (node_stack.size() != 1) throw std::runtime_error("Syntax error: Missing or redundant arguments");
+    return std::move(node_stack.top()); // The root node
 }
 
 bool eval::check_bracket_matching(std::vector<parser::Token>::const_iterator tokens_begin, std::vector<parser::Token>::const_iterator tokens_end) {
