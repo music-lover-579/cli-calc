@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
             auto tokens = parser::tokenize(args.str_);
             dispatcher::Result result = dispatcher::get_result(args.mode_, {}, tokens.begin(), tokens.end());
             if (std::holds_alternative<types::Numeral>(result)) {
-                std::cout << "\nans = " << std::get<types::Numeral>(result) << "\n" << std::endl;
+                std::cout << "\nans = " << RGB_TEXT(70, 130, 180) << std::get<types::Numeral>(result) << RESET << "\n" << std::endl;
             }
         }
         catch (const CliHelp&) {
@@ -22,15 +22,15 @@ int main(int argc, char* argv[]) {
             return 0;
         }
         catch (const std::invalid_argument& err) {
-            std::cerr << err.what() << std::endl;
+            std::cerr << "\n" << RGB_TEXT(255, 40, 40) << err.what() << RESET << "\n" << std::endl;
             return 1;
         }
         catch (const std::runtime_error& err) {
-            std::cerr << err.what() << std::endl;
+            std::cerr << "\n" << RGB_TEXT(255, 40, 40) << err.what() << RESET << "\n" << std::endl;
             return 1;
         }
         catch (...) {
-            std::cerr << "Internal error" << std::endl;
+            std::cerr << "\n" << RGB_TEXT(255, 40, 40) << "Internal error" << RESET << "\n" << std::endl;
             return 1;
         }
     }
